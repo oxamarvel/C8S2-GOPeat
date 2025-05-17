@@ -102,6 +102,8 @@ struct CanteenDetail: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
+                        NewFilter()
+                        
                         Filter(categories: viewModel.categories, selectedCategories: $viewModel.selectedCategories, maxPrice: $viewModel.maxPrice, isOpenNow: $viewModel.isOpenNow)
                             .onChange(of: viewModel.selectedCategories) { _, _ in
                                 viewModel.updateFilteredTenant()
@@ -157,7 +159,7 @@ struct CanteenDetail: View {
         case "Live Music": return "music.mic"
         case "Event Space": return "calendar"
         case "Premium Dining": return "star"
-        case "Prayer Room": return "mosque" // Added prayer room icon
+        case "Prayer Room": return "hands.and.sparkles" // Added prayer room icon
         default: return "mappin"
         }
     }

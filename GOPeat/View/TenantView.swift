@@ -141,6 +141,8 @@ struct TenantView: View {
                         // Tenant's Side-scrolling images
                         imageSlider(image: sampleImages)
                         
+                        NewFilter()
+                        
                         // Filter Component
                         Filter(categories: viewModel.categories, selectedCategories: $selectedCategories, maxPrice: $maxPrice, isOpenNow: $isOpenNow)
                             .onChange(of: selectedCategories) { _, _ in

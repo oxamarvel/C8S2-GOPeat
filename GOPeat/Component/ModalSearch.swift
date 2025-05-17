@@ -147,6 +147,9 @@ struct ModalSearch: View {
                         tenantSearchViewModel.saveRecentSearch(searchTerm: tenantSearchViewModel.searchTerm)
                       })
             if (tenantSearchViewModel.sheeHeight != .fraction(0.1)){
+                
+                NewFilter()
+                
                 Filter(categories: tenantSearchViewModel.categories, selectedCategories: $tenantSearchViewModel.selectedCategories, maxPrice: $tenantSearchViewModel.maxPrice, isOpenNow: $tenantSearchViewModel.isOpenNow)
                     .onChange(of: tenantSearchViewModel.selectedCategories) { _, _ in
                         tenantSearchViewModel.updateFilteredTenant()
@@ -157,6 +160,7 @@ struct ModalSearch: View {
                     .onChange(of: tenantSearchViewModel.isOpenNow) { _, _ in
                         tenantSearchViewModel.updateFilteredTenant()
                     }
+                
                 ScrollView(.vertical){
                     //Recent search (max 5)
                     if !tenantSearchViewModel.recentSearch.isEmpty {
