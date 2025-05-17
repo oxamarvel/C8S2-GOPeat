@@ -30,13 +30,13 @@ struct NewFilter: View {
         }
         .sheet(isPresented: $showAllFilter) {
             ModalFilter()
-            
-            
 //            MoreFilterView(
 //                maxPrice: Binding(get: { maxPrice ?? 100000 }, set: { maxPrice = $0 }),
 //                isOpenNow: Binding(get: { isOpenNow ?? false }, set: { isOpenNow = $0 })
 //            )
         }
+        
+        
         
     }
 }
@@ -44,6 +44,9 @@ struct NewFilter: View {
 
 
 struct ModalFilter: View {
+    @Environment(\.dismiss) private var dismiss
+
+    
 //    let categories: [String]
 
     @State private var selectedTenant: Set<String> = []
@@ -52,12 +55,31 @@ struct ModalFilter: View {
 
     @State private var selectedCategories: Set<FoodCategory> = []
     
-    @Environment(\.dismiss) var dismiss
     @State private var useSavedFilters = false
     @State private var priceBelow15K = false
     @State private var price15to40K = false
     @State private var price40to100K = false
-    @State private var priceAbove100K = false
+    @State private var priceOver100K = false
+    
+    
+    
+    
+    
+    private func onApply(){
+        dismiss()
+    }
+    
+    private func onSave(){
+        
+    }
+    
+    private func onClear(){
+        useSavedFilters = false
+        priceBelow15K = false
+        price15to40K = false
+        price40to100K = false
+        priceOver100K = false
+    }
     
     
     
@@ -72,10 +94,11 @@ struct ModalFilter: View {
                 Spacer()
                 
                 Button(action: {
-                    useSavedFilters = false
-                    selectedTenant.removeAll()
+                    onClear()
+//                    useSavedFilters = false
+//                    selectedTenant.removeAll()
 //                    selectedPriceRanges.removeAll()
-                    selectedCategories.removeAll()
+//                    selectedCategories.removeAll()
                 }) {
                     Text("Clear")
                         .font(.title2.bold())
@@ -107,6 +130,19 @@ struct ModalFilter: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Price")
                             .font(.title3.bold())
+                        
+                        Toggle("Below Rp15.000", isOn: $priceBelow15K)
+                            .toggleStyle(CheckboxStyle())
+                            .font(.title3)
+                        Toggle("Rp15.000 - Rp40.000", isOn: $price15to40K)
+                            .toggleStyle(CheckboxStyle())
+                            .font(.title3)
+                        Toggle("Rp40.000 - Rp100.000", isOn: $price40to100K)
+                            .toggleStyle(CheckboxStyle())
+                            .font(.title3)
+                        Toggle("Over Rp100.000", isOn: $priceOver100K)
+                            .toggleStyle(CheckboxStyle())
+                            .font(.title3)
                         
 //                        ForEach(PriceRange.allCases) { range in
 //                            Toggle(range.rawValue, isOn: Binding(
@@ -161,6 +197,7 @@ struct ModalFilter: View {
             
             HStack {
                 Button(action: {
+                    onSave()
                 }){
                     Text("Save Filters")
                         .frame(maxWidth: .infinity)
@@ -172,6 +209,7 @@ struct ModalFilter: View {
                 .cornerRadius(13)
                 
                 Button(action: {
+                    onApply()
                 }){
                     Text("Apply")
                         .frame(maxWidth: .infinity)
@@ -186,5 +224,7 @@ struct ModalFilter: View {
             .frame(maxWidth: .infinity)
             .padding(.horizontal)
         }
+        .padding(.top)
+        .presentationDragIndicator(.visible)
     }
 }
