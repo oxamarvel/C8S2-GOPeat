@@ -47,10 +47,10 @@ struct MapTutorialOverlay: View {
                 }) {
                     Text("Got it!")
                         .fontWeight(.semibold)
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
                         .frame(width: 200)
                         .padding()
-                        .background(Color.blue)
+                        .background(Colors.gopGold)
                         .cornerRadius(12)
                 }
                 .padding(.top, 8)

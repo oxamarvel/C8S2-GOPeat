@@ -19,25 +19,6 @@ struct CanteenDetail: View {
         self.dismissAction = dismissAction
         self._viewModel = StateObject(wrappedValue: TenantSearchViewModel(tenants: canteen.tenants))
     }
-
-//    private func showTenant(tenants: [Tenant]) -> some View {
-//        VStack(alignment: .leading) {
-//            Text("Tenants")
-//                .font(.headline)
-//                .fontWeight(.bold)
-//                .padding(0)
-//            Divider()
-//            if !tenants.isEmpty {
-//                ForEach(tenants) {tenant in
-//                    TenantCard(tenant: tenant, selectedCategories: $viewModel.selectedCategories)
-//                }
-//            } else {
-//                Text("Coming Soon")
-//                    .font(.subheadline)
-//                    .frame(maxWidth: .infinity, alignment: .center)
-//            }
-//        }
-//    }
     
     private func showTenant(tenants: [Tenant]) -> some View {
         VStack(alignment: .leading) {
@@ -182,8 +163,3 @@ struct CanteenDetail: View {
     }
 }
 
-//#Preview {
-//    // You'll need to create a dummy Canteen object for the preview
-//    let dummyCanteen = Canteen(name: "Green Eatery", latitude: -6.302180333605081, longitude: 106.65229958867403, image: "GreenEatery", desc: "Modern food court featuring diverse dishes", operationalTime: "Monday - Friday: 6 AM - 9 PM", amenities: ["Disabled Access", "Smoking Area", "Convenience Store"])
-//    return CanteenDetail(canteen: dummyCanteen, dismissAction: {})
-//}

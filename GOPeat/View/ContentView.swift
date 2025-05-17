@@ -82,7 +82,6 @@ struct ContentView: View {
                                                 contactPerson: "08987654321",
                                                 preorderInformation: true,
                                                 operationalHours: "10:00-16:00", isHalal: true, canteen: gOP6, priceRange: "15.000-30.000")
-        // TO DO - create tenant for each canteen (gOP6, gOP1, theBreeze)
         
         // Masukkan Tenant ke context
         context.insert(mamaDjempol)
@@ -164,22 +163,18 @@ struct ContentView: View {
             //TO DO - create food for other tenant
 
             // Insert semua data ke dalam modelContext
-            let allFoods = kasturiFoods + laDingFoods + mamaDjempolFoods + dapurMiminFoods + nasiPadangFoods
-            for food in allFoods {
-                context.insert(food)
-            }
-            do {
-                try context.save()
-            } catch {
-                fatalError(error.localizedDescription)
-            }
-            print("Insert Initial Data Success")
-            print("===============================")
+        let allFoods = kasturiFoods + laDingFoods + mamaDjempolFoods + dapurMiminFoods + nasiPadangFoods
+        for food in allFoods {
+            context.insert(food)
         }
+        do {
+            try context.save()
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
         //TO DO - create food for other tenant
-        
-        // Insert semua data ke dalam modelContext
-    
+            
     private func deleteInitialData() async {
         do {
             let canteens = try context.fetch(FetchDescriptor<Canteen>())
@@ -201,22 +196,9 @@ struct ContentView: View {
         } catch {
             fatalError(error.localizedDescription)
         }
-        
-        print("Delete Initial Success")
-        print("===============================")
     }
-    private func showInsertedData() {
-        for canteen in canteens {
-            print("=== Canteens ===")
-            print("Nama: \(canteen.name), Lokasi: (\(canteen.latitude), \(canteen.longitude))")
-            for tenant in canteen.tenants {
-                print("Nama: \(tenant.name) Halal: \( (tenant.isHalal ?? false) ? "Yes" : "No")")
-                for food in tenant.foods {
-                    print("Nama: \(food.name), Deskripsi: \(food.desc), Tenant: \(food.tenant?.name ?? "Unknown")")
-                }
-            }
-        }
-    }
+    
+    
     var body: some View {
         Group {
             if isDataLoaded {
@@ -230,7 +212,6 @@ struct ContentView: View {
                 await deleteInitialData()
                 await insertInitialData()
             }
-            showInsertedData()
             isDataLoaded = true
         }
     }
