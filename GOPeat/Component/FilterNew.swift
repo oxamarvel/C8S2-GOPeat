@@ -20,8 +20,8 @@ struct PriceRangeFilter: Equatable {
         below15K || fifteenTo40K || fortyTo100K || over100K
     }
     
-    // Helper function to extract upper price from range string
-    private func extractUpperPrice(_ priceRange: String) -> Int? {
+    // Helper function to extract lower price from range string
+    private func extractLowerPrice(_ priceRange: String) -> Int? {
         // Remove any dots (thousand separators) and whitespace
         let cleanedString = priceRange
             .replacingOccurrences(of: ".", with: "")
@@ -31,8 +31,8 @@ struct PriceRangeFilter: Equatable {
         guard components.count == 2 else { return nil }
         
         // Try to parse both parts as integers
-        if let lower = Int(components[0]), let upper = Int(components[1]) {
-            return max(lower, upper) // Return the higher value
+        if let lower = Int(components[0]), Int(components[1]) != nil {
+            return lower // Return the lower value
         }
         return nil
     }
@@ -40,20 +40,19 @@ struct PriceRangeFilter: Equatable {
     func matches(_ priceRange: String) -> Bool {
         guard isActive else { return true } // Show all if no filters selected
         
-        guard let upperPrice = extractUpperPrice(priceRange) else {
+        guard let lowerPrice = extractLowerPrice(priceRange) else {
             return false // If we can't parse the price range, exclude it
         }
         
-        // Check against all active price filters
-        if below15K && upperPrice <= 15000 { return true }
-        if fifteenTo40K && upperPrice >= 15000 && upperPrice <= 40000 { return true }
-        if fortyTo100K && upperPrice >= 40000 && upperPrice <= 100000 { return true }
-        if over100K && upperPrice > 100000 { return true }
+        // Check against all active price filters using LOWER price
+        if below15K && lowerPrice <= 14999 { return true }
+        if fifteenTo40K && lowerPrice >= 15000 && lowerPrice <= 39999 { return true }
+        if fortyTo100K && lowerPrice >= 40000 && lowerPrice <= 100000 { return true }
+        if over100K && lowerPrice > 100000 { return true }
         
         return false
     }
 }
-
 
 struct NewFilter: View {
     @State var showAllFilter: Bool = false
