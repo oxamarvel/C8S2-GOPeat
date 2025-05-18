@@ -4,10 +4,13 @@
 //
 //  Created by jonathan calvin sutrisna on 07/04/25.
 //
+//  WIP
+
 
 import SwiftUI
 import MapKit
 import SwiftData
+
 
 struct CanteenDetail: View {
     let canteen: Canteen
@@ -22,11 +25,11 @@ struct CanteenDetail: View {
     
     private func showTenant(tenants: [Tenant]) -> some View {
         VStack(alignment: .leading) {
+            Divider()
             Text("Tenants")
                 .font(.headline)
                 .fontWeight(.bold)
-                .padding(0)
-            Divider()
+                .padding(.bottom, 5)
             if !tenants.isEmpty {
                 ForEach(tenants) {tenant in
                     TenantCard(tenant: tenant, selectedCategories: $viewModel.selectedCategories)
@@ -49,7 +52,7 @@ struct CanteenDetail: View {
                     // Header
                     HStack(alignment: .top) {
                         Image(systemName: "fork.knife.circle.fill")
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Colors.gopGreenDark)
                             .font(.system(size: 36))
                         
                         VStack(alignment: .leading, spacing: 4) {
@@ -137,11 +140,11 @@ struct CanteenDetail: View {
                     // Tenants Section
                     if canteen.tenants.isEmpty {
                         VStack(alignment: .leading) {
+                            Divider()
                             Text("Tenants")
                                 .font(.headline)
                                 .fontWeight(.bold)
-                                .padding(0)
-                            Divider()
+                                .padding(.bottom)
                             Text("Coming Soon")
                                 .font(.subheadline.bold())
                                 .foregroundStyle(.secondary)
@@ -159,6 +162,7 @@ struct CanteenDetail: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done", action: dismissAction)
+                        .foregroundStyle(Colors.gopGreenDark)
                 }
             }
         }

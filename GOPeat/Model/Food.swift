@@ -33,4 +33,5 @@ enum FoodCategory: String, CaseIterable, Codable {
     case savory = "Savory"
     case sweet = "Sweet"
     case nonSweet = "Non-Sweet"
+    case dairyFree = "Dairy-Free"
 }

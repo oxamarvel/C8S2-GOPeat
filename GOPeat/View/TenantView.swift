@@ -20,8 +20,8 @@ class FoodFilterViewModel: ObservableObject{
     init(foods: [Food]) {
         let tenant = foods.first?.tenant
         var tempfoods = foods
-        let dummy = Food(name: "Dumy", description: "Dumy", categories: [.nonSpicy, .nonGreasy, .nonSweet, .spicy, .greasy, .sweet, .soup, .roast, .savory], tenant: tenant)
-        tempfoods.insert(dummy, at: 0)
+        let dumy = Food(name: "Dumy", description: "Dumy", categories: [.nonSpicy, .nonGreasy, .nonSweet, .spicy, .greasy, .sweet, .soup, .roast, .savory], tenant: tenant)
+        tempfoods.insert(dumy, at: 0)
         self.foods = tempfoods
         self.filteredFoods = tempfoods
     }
@@ -44,6 +44,7 @@ struct TenantView: View {
     let foods: [Food]
     let tenant: Tenant
     let isHalal: Bool
+    let preorderInformation: Bool
     let symbol: String
     let color: Color
     @Binding var selectedCategories: [String]
@@ -57,8 +58,9 @@ struct TenantView: View {
         self.foods = foods
         self.tenant = tenant
         self.isHalal = tenant.isHalal ?? false
-        self.symbol = isHalal ? "checkmark.circle.fill" : "xmark.circle.fill"
-        self.color = isHalal ? .green : .red
+        self.preorderInformation = tenant.preorderInformation ?? false
+        self.symbol = preorderInformation ? "checkmark.circle.fill" : "xmark.circle.fill"
+        self.color = preorderInformation ? .green : .red
         self._selectedCategories = selectedCategories
         _viewModel = StateObject(wrappedValue: FoodFilterViewModel(foods: foods))
         
@@ -80,15 +82,17 @@ struct TenantView: View {
                 Text(tenant.name)
                     .font(.largeTitle.bold())
                 Text(tenant.canteen?.name ?? "")
-                    .font(.body)
-                //.foregroundColor(.gray)
+                    .font(.body.bold())
+                    .foregroundColor(.gray)
                 Spacer()
             }
 
             
-            HStack() {
+            HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 10) {
                     Label(tenant.operationalHours, systemImage: "clock")
+                    
+                    Label("Rp\(tenant.priceRange)", systemImage: "banknote")
                     
                     HStack() {
                         Label(tenant.contactPerson, systemImage: "phone")
@@ -100,7 +104,7 @@ struct TenantView: View {
                 
                 Spacer()
                 
-                if true {
+                if tenant.isHalal == true {
                     Image("halal")
                         .resizable()
                         .frame(width: 40, height: 40)
@@ -142,6 +146,8 @@ struct TenantView: View {
                         // Tenant's Side-scrolling images
                         imageSlider(image: sampleImages)
                         
+                        
+                        
                         NewFilter(
                             categories          : viewModel.categories,
                             selectedCategories  : $selectedCategories,
@@ -162,13 +168,17 @@ struct TenantView: View {
                             }.padding(.horizontal, 20)
                         
                         // List of Food
-                        VStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Divider()
+                            Text("Foods")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .padding(.bottom, 5)
                             if viewModel.filteredFoods.count == 1 && viewModel.filteredFoods.first?.name == "Dumy" {
                                 Text("Not Found")
                                     .font(.subheadline)
                                     .bold()
                                     .frame(maxWidth: .infinity, alignment: .center)
-                                    .padding(.top, 10)
                                 
                             } else {
                                 ForEach(viewModel.filteredFoods.filter { $0.name != "Dumy" }) { food in
@@ -195,6 +205,7 @@ struct TenantView: View {
                     } label: {
                         (Text(Image(systemName: "chevron.left"))
                          + Text(" Back"))
+                        .foregroundStyle(Colors.gopGreenDark)
                     }
                 }
             }
@@ -216,23 +227,40 @@ struct FoodCard: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 5) {
-                        ForEach(food.categories, id: \.self) { category in
-                            Text(category.rawValue)
-                                .padding(5)
-                                .font(.caption)
-                                .foregroundColor(.primary)
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(3)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 3)
-                                        .stroke(Color.gray.opacity(0.0), lineWidth: 1)
-                                    )
-                        }
+                WrappingHStack(spacing: 5) {
+                    ForEach(food.categories, id: \.self) { category in
+                        Text(category.rawValue)
+                            .padding(5)
+                            .font(.caption)
+                            .foregroundColor(.primary)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(3)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 3)
+                                    .stroke(Color.gray.opacity(0.0), lineWidth: 1)
+                                )
                     }
                 }
                 .padding(.top, 10)
+
+                
+//                ScrollView(.horizontal, showsIndicators: false) {
+//                    HStack(spacing: 5) {
+//                        ForEach(food.categories, id: \.self) { category in
+//                            Text(category.rawValue)
+//                                .padding(5)
+//                                .font(.caption)
+//                                .foregroundColor(.primary)
+//                                .background(Color.gray.opacity(0.1))
+//                                .cornerRadius(3)
+//                                .overlay(
+//                                    RoundedRectangle(cornerRadius: 3)
+//                                        .stroke(Color.gray.opacity(0.0), lineWidth: 1)
+//                                    )
+//                        }
+//                    }
+//                }
+//                .padding(.top, 10)
             }
                 
             Spacer()

@@ -218,7 +218,7 @@ struct MapView: View {
                 CanteenDetail(canteen: canteen, dismissAction: {
                     showDetail = false
                 })
-                .presentationDetents([.medium])
+                .presentationDetents([.fraction(0.95)])
             }
         }
         .sheet(isPresented: Binding(

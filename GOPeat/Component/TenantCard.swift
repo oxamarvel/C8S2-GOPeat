@@ -25,7 +25,7 @@ struct TenantCard: View {
         Button(action: {
             showTenantDetail = true
         }) {
-            HStack {
+            HStack(alignment: .bottom) {
                 Image(tenant.image)
                     .resizable()
                     .frame(maxWidth: 80, maxHeight: 80)
@@ -36,16 +36,38 @@ struct TenantCard: View {
                     Text(tenant.name)
                         .font(.subheadline)
                         .bold()
-                        .padding(.bottom,5)
+                    Text(tenant.canteen?.name ?? "")
+                        .font(.caption)
+//                        .padding(.bottom,5)
+                    
+                    Spacer()
+                    
                     infoRow(label: "Operational Hours", value: tenant.operationalHours)
-                    infoRow(label: "Contact Person", value: tenant.contactPerson)
-                    infoRow(label: "Pre-order Information", value: "\((tenant.preorderInformation ?? false) ? "Available" : "Not available")")
+                    infoRow(label: "Average Spent", value: "Rp\(tenant.priceRange)")
+                    
+                    
+                    
+//                    infoRow(label: "Contact Person", value: tenant.contactPerson)
+//                    infoRow(label: "Pre-order Information", value: "\((tenant.preorderInformation ?? false) ? "Available" : "Not available")")
                 }
                 
-                Spacer()
+                
+                if tenant.isHalal == true {
+                    Image("halal")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .padding(.leading, 15)
+                } else {
+                    Image("halal")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .opacity(0)
+                        .padding(.leading,15)
+                }
+                
             }
             .padding(10)
-            .background(Color(.systemGray5).opacity(0.3))
+            .background(Color(.systemGray5).opacity(0.4))
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)

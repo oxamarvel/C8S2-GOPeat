@@ -4,6 +4,8 @@
 //
 //  Created by Oxa Marvel on 17/05/25.
 //
+//  WIP
+
 
 import SwiftUI
 
@@ -206,40 +208,8 @@ struct ModalFilter: View {
                                     RoundedRectangle(cornerRadius: 20)
                                         .stroke(Colors.gopGreenDark, lineWidth: 1.5)
                                 )
-                                
-                                
-//                                .foregroundStyle(selectedCategories.contains(category) ? Color("NonDefault")  :  Color.primary)
-//                                .padding(10)
-//                                .background(selectedCategories.contains(category) ? Color.blue : Color(.systemGray5))
-//                                .clipShape(Capsule())
                             }
                         }
-
-//                        FlowLayout(data: categories, spacing: 7) { category in
-//                            Button(action: {
-//                                if !selectedCategories.contains(category) {
-//                                    if let conflictCategory = conflictingCategory(for: category) {
-//                                        selectedCategories.removeAll { $0 == conflictCategory }
-//                                    }
-//                                    selectedCategories.append(category)
-//                                } else {
-//                                    selectedCategories.removeAll { $0 == category }
-//                                }
-//                            }) {
-//                                Text(category.rawValue)
-//                                    .font(.body)
-//                                    .padding(.vertical, 8)
-//                                    .padding(.horizontal, 16)
-//                                    .background(selectedCategories.contains(category) ? Colors.gopGreenLight : Colors.gopWhite)
-//                                    .foregroundColor(.black)
-//                                    .cornerRadius(20)
-//                                    .overlay(
-//                                        RoundedRectangle(cornerRadius: 20)
-//                                            .stroke(Colors.gopGreenDark, lineWidth: 1.5)
-//                                    )
-//                            }
-//                        }
-
                     }
                     .padding(.horizontal)
                 }
