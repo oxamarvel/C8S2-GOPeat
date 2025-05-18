@@ -84,7 +84,7 @@ struct CanteenDetail: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
 
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 8) {
+                        WrappingHStack(spacing: 8, lineSpacing: 10){
                             ForEach(canteen.amenities, id: \.self) { amenity in
                                 Label(amenity, systemImage: amenityIcon(for: amenity))
                                     .font(.subheadline)
@@ -102,9 +102,27 @@ struct CanteenDetail: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                         
-                        NewFilter()
+                        NewFilter(
+                            categories: viewModel.categories,
+                            selectedCategories: $viewModel.selectedCategories,
+                            isOpenNow: $viewModel.isOpenNow)
                         
-                        Filter(categories: viewModel.categories, selectedCategories: $viewModel.selectedCategories, maxPrice: $viewModel.maxPrice, isOpenNow: $viewModel.isOpenNow)
+                            .onChange(of: viewModel.isOpenNow) { _, _ in
+                                viewModel.updateFilteredTenant()
+                            }
+                            .onChange(of: viewModel.selectedCategories) { _, _ in
+                                viewModel.updateFilteredTenant()
+                            }
+                        
+                        
+
+                            
+                        
+                        Filter(
+                            categories          : viewModel.categories,
+                            selectedCategories  : $viewModel.selectedCategories,
+                            maxPrice            : $viewModel.maxPrice,
+                            isOpenNow           : $viewModel.isOpenNow)
                             .onChange(of: viewModel.selectedCategories) { _, _ in
                                 viewModel.updateFilteredTenant()
                             }

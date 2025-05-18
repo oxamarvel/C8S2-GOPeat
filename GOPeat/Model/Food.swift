@@ -22,6 +22,7 @@ class Food: Identifiable {
         self.tenant = tenant
     }
 }
+
 enum FoodCategory: String, CaseIterable, Codable {
     case spicy = "Spicy"
     case nonSpicy = "Non-Spicy"

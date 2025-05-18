@@ -87,6 +87,14 @@ class TenantSearchViewModel: ObservableObject{
     }
 }
 
+
+
+
+
+
+
+
+
 struct ModalSearch: View {
     @FocusState var isTextFieldFocused: Bool
     private let maxHeight: PresentationDetent = .fraction(0.9)
@@ -148,9 +156,20 @@ struct ModalSearch: View {
                       })
             if (tenantSearchViewModel.sheeHeight != .fraction(0.1)){
                 
-                NewFilter()
+                NewFilter(
+                    categories          : tenantSearchViewModel.categories,
+                    selectedCategories  : $tenantSearchViewModel.selectedCategories,
+                    isOpenNow           : $tenantSearchViewModel.isOpenNow)
                 
-                Filter(categories: tenantSearchViewModel.categories, selectedCategories: $tenantSearchViewModel.selectedCategories, maxPrice: $tenantSearchViewModel.maxPrice, isOpenNow: $tenantSearchViewModel.isOpenNow)
+                    .onChange(of: tenantSearchViewModel.isOpenNow) { _, _ in
+                        tenantSearchViewModel.updateFilteredTenant()
+                    }
+                
+                Filter(
+                    categories          : tenantSearchViewModel.categories,
+                    selectedCategories  : $tenantSearchViewModel.selectedCategories,
+                    maxPrice            : $tenantSearchViewModel.maxPrice,
+                    isOpenNow           : $tenantSearchViewModel.isOpenNow)
                     .onChange(of: tenantSearchViewModel.selectedCategories) { _, _ in
                         tenantSearchViewModel.updateFilteredTenant()
                     }

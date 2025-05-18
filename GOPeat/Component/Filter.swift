@@ -149,6 +149,8 @@ struct MoreFilterView: View {
         isOpenNow = false
         dismiss()
     }
+    
+    
     var body: some View {
         ZStack {
             ScrollView(.vertical) {
@@ -170,6 +172,7 @@ struct MoreFilterView: View {
                         .font(.subheadline)
                         .fontWeight(.bold)
                         .padding(.top, 10)
+                    
                     Button {
                         tempIsOpenNow.toggle()
                     } label: {

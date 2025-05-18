@@ -9,14 +9,13 @@ import SwiftUI
 
 
 struct NewFilter: View {
-//    let categories: [String]
-
     @State var showAllFilter: Bool = false
-    @State var isAdditionalFilterUsed: Bool = false
 
+    let categories: [String]
+    @Binding var selectedCategories: [String]
+    @Binding var isOpenNow: Bool?
     
     var body: some View {
-        
         
         Button {
             showAllFilter = true
@@ -26,18 +25,14 @@ struct NewFilter: View {
                 .scaledToFit()
                 .frame(width: 20)
                 .foregroundStyle(Color("Default"))
-                .opacity(isAdditionalFilterUsed ? 1 : 0.3)
         }
         .sheet(isPresented: $showAllFilter) {
-            ModalFilter()
-//            MoreFilterView(
-//                maxPrice: Binding(get: { maxPrice ?? 100000 }, set: { maxPrice = $0 }),
-//                isOpenNow: Binding(get: { isOpenNow ?? false }, set: { isOpenNow = $0 })
-//            )
+            ModalFilter(
+                categories: categories,
+                selectedCategories: $selectedCategories,
+                isOpenNow: Binding(get: { isOpenNow ?? false }, set: { isOpenNow = $0 })
+            )
         }
-        
-        
-        
     }
 }
 
@@ -45,15 +40,16 @@ struct NewFilter: View {
 
 struct ModalFilter: View {
     @Environment(\.dismiss) private var dismiss
-
     
-//    let categories: [String]
+    let categories: [String]
+    @Binding var selectedCategories: [String]
+    @Binding var isOpenNow: Bool
+
 
     @State private var selectedTenant: Set<String> = []
     
-//    @State private var selectedPriceRanges: Set<PriceRange> = []
-
-    @State private var selectedCategories: Set<FoodCategory> = []
+    
+    @State var tempIsOpenNow: Bool = false
     
     @State private var useSavedFilters = false
     @State private var priceBelow15K = false
@@ -62,10 +58,8 @@ struct ModalFilter: View {
     @State private var priceOver100K = false
     
     
-    
-    
-    
     private func onApply(){
+        isOpenNow = tempIsOpenNow
         dismiss()
     }
     
@@ -75,13 +69,29 @@ struct ModalFilter: View {
     
     private func onClear(){
         useSavedFilters = false
+        
+        isOpenNow = false
+        tempIsOpenNow = false
+        
         priceBelow15K = false
         price15to40K = false
         price40to100K = false
         priceOver100K = false
+        
+        selectedCategories = []
     }
     
-    
+    private func conflictingCategory(for category: String) -> String? {
+        if category.hasPrefix("Non-") {
+            // If start with "Non-", check category without "Non-"
+            let conflictCategory = String(category.dropFirst(4))
+            return selectedCategories.contains(conflictCategory) ? conflictCategory : nil
+        } else {
+            // If start without "Non-", check category with "Non-"
+            let conflictCategory = "Non-" + category
+            return selectedCategories.contains(conflictCategory) ? conflictCategory : nil
+        }
+    }
     
     var body: some View {
         
@@ -95,10 +105,6 @@ struct ModalFilter: View {
                 
                 Button(action: {
                     onClear()
-//                    useSavedFilters = false
-//                    selectedTenant.removeAll()
-//                    selectedPriceRanges.removeAll()
-//                    selectedCategories.removeAll()
                 }) {
                     Text("Clear")
                         .font(.title2.bold())
@@ -118,9 +124,28 @@ struct ModalFilter: View {
                     
                     Divider().padding(.horizontal)
                     
-                    VStack {
+                    VStack(alignment: .leading) {
                         Text("Tenant")
                             .font(.title3.bold())
+                        
+                        HStack{
+                            Button {
+                                tempIsOpenNow.toggle()
+                            } label: {
+                                Text("Open Now")
+                                    .font(.caption)
+                            }
+                            .font(.body)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background(tempIsOpenNow ? Colors.gopGreenLight : Colors.gopWhite)
+                            .foregroundColor(.black)
+                            .cornerRadius(20)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Colors.gopGreenDark, lineWidth: 1.5)
+                            )
+                        }
                         
                     }
                     .padding(.horizontal)
@@ -143,21 +168,6 @@ struct ModalFilter: View {
                         Toggle("Over Rp100.000", isOn: $priceOver100K)
                             .toggleStyle(CheckboxStyle())
                             .font(.title3)
-                        
-//                        ForEach(PriceRange.allCases) { range in
-//                            Toggle(range.rawValue, isOn: Binding(
-//                                get: { selectedPriceRanges.contains(range) },
-//                                set: { isSelected in
-//                                    if isSelected {
-//                                        selectedPriceRanges.insert(range)
-//                                    } else {
-//                                        selectedPriceRanges.remove(range)
-//                                    }
-//                                }
-//                            ))
-//                            .toggleStyle(CheckboxStyle())
-//                            .font(.title3)
-//                        }
                     }
                     .padding(.horizontal)
                     
@@ -166,13 +176,54 @@ struct ModalFilter: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Cuisine Type")
                             .font(.title3.bold())
+                        
+                        WrappingHStack(spacing: 8, lineSpacing: 10) {
+                            ForEach(categories.sorted { lhs, rhs in
+                                let lhsSelected = selectedCategories.contains(lhs)
+                                let rhsSelected = selectedCategories.contains(rhs)
+                                return lhsSelected && !rhsSelected
+                            }, id: \.self) { category in
+                                Button {
+                                    if !selectedCategories.contains(category) {
+                                        if let conflictCategory = conflictingCategory(for: category) {
+                                            selectedCategories.removeAll { $0 == conflictCategory }
+                                        }
+                                        selectedCategories.append(category)
+                                    } else {
+                                        selectedCategories.removeAll { $0 == category }
+                                    }
+                                } label: {
+                                    Text(category)
+                                        .font(.caption)
+                                }
+                                .font(.body)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16)
+                                .background(selectedCategories.contains(category) ? Colors.gopGreenLight : Colors.gopWhite)
+                                .foregroundColor(.black)
+                                .cornerRadius(20)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Colors.gopGreenDark, lineWidth: 1.5)
+                                )
+                                
+                                
+//                                .foregroundStyle(selectedCategories.contains(category) ? Color("NonDefault")  :  Color.primary)
+//                                .padding(10)
+//                                .background(selectedCategories.contains(category) ? Color.blue : Color(.systemGray5))
+//                                .clipShape(Capsule())
+                            }
+                        }
 
-//                        FlowLayout(data: categories.sorted(by: { $0.rawValue < $1.rawValue }), spacing: 7) { category in
+//                        FlowLayout(data: categories, spacing: 7) { category in
 //                            Button(action: {
-//                                if selectedCategories.contains(category) {
-//                                    selectedCategories.remove(category)
+//                                if !selectedCategories.contains(category) {
+//                                    if let conflictCategory = conflictingCategory(for: category) {
+//                                        selectedCategories.removeAll { $0 == conflictCategory }
+//                                    }
+//                                    selectedCategories.append(category)
 //                                } else {
-//                                    selectedCategories.insert(category)
+//                                    selectedCategories.removeAll { $0 == category }
 //                                }
 //                            }) {
 //                                Text(category.rawValue)
@@ -207,6 +258,7 @@ struct ModalFilter: View {
                 .padding()
                 .background(Colors.gopGrayLight)
                 .cornerRadius(13)
+                
                 
                 Button(action: {
                     onApply()

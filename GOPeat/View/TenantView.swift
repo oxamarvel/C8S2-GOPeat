@@ -129,6 +129,7 @@ struct TenantView: View {
             .padding(.horizontal)
         }
     }
+    
     var body: some View {
         NavigationView {
             ZStack (alignment: .top){
@@ -141,10 +142,21 @@ struct TenantView: View {
                         // Tenant's Side-scrolling images
                         imageSlider(image: sampleImages)
                         
-                        NewFilter()
+                        NewFilter(
+                            categories          : viewModel.categories,
+                            selectedCategories  : $selectedCategories,
+                            isOpenNow           : $isOpenNow)
+                            .onChange(of: selectedCategories) { _, _ in
+                                viewModel.updateFilteredFood(selectedCategories: selectedCategories)
+                            }
+                            .padding(.horizontal)
                         
                         // Filter Component
-                        Filter(categories: viewModel.categories, selectedCategories: $selectedCategories, maxPrice: $maxPrice, isOpenNow: $isOpenNow)
+                        Filter(
+                            categories          : viewModel.categories,
+                            selectedCategories  : $selectedCategories,
+                            maxPrice            : $maxPrice,
+                            isOpenNow           : $isOpenNow)
                             .onChange(of: selectedCategories) { _, _ in
                                 viewModel.updateFilteredFood(selectedCategories: selectedCategories)
                             }.padding(.horizontal, 20)
