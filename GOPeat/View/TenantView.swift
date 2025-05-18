@@ -50,6 +50,7 @@ struct TenantView: View {
     @Binding var selectedCategories: [String]
     @StateObject private var viewModel: FoodFilterViewModel
     
+    @State var priceFilter = PriceRangeFilter()
     @State private var maxPrice: Double? = nil
     @State private var isOpenNow: Bool? = nil
 
@@ -151,7 +152,9 @@ struct TenantView: View {
                         NewFilter(
                             categories          : viewModel.categories,
                             selectedCategories  : $selectedCategories,
-                            isOpenNow           : $isOpenNow)
+                            isOpenNow           : $isOpenNow,
+                            priceFilter         : $priceFilter
+                        )
                             .onChange(of: selectedCategories) { _, _ in
                                 viewModel.updateFilteredFood(selectedCategories: selectedCategories)
                             }

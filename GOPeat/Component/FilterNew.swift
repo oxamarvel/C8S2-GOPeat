@@ -9,16 +9,60 @@
 
 import SwiftUI
 
+// Price range filter state to be used in parent view
+struct PriceRangeFilter: Equatable {
+    var below15K: Bool = false
+    var fifteenTo40K: Bool = false
+    var fortyTo100K: Bool = false
+    var over100K: Bool = false
+    
+    var isActive: Bool {
+        below15K || fifteenTo40K || fortyTo100K || over100K
+    }
+    
+    // Helper function to extract upper price from range string
+    private func extractUpperPrice(_ priceRange: String) -> Int? {
+        // Remove any dots (thousand separators) and whitespace
+        let cleanedString = priceRange
+            .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: " ", with: "")
+        
+        let components = cleanedString.components(separatedBy: "-")
+        guard components.count == 2 else { return nil }
+        
+        // Try to parse both parts as integers
+        if let lower = Int(components[0]), let upper = Int(components[1]) {
+            return max(lower, upper) // Return the higher value
+        }
+        return nil
+    }
+    
+    func matches(_ priceRange: String) -> Bool {
+        guard isActive else { return true } // Show all if no filters selected
+        
+        guard let upperPrice = extractUpperPrice(priceRange) else {
+            return false // If we can't parse the price range, exclude it
+        }
+        
+        // Check against all active price filters
+        if below15K && upperPrice <= 15000 { return true }
+        if fifteenTo40K && upperPrice >= 15000 && upperPrice <= 40000 { return true }
+        if fortyTo100K && upperPrice >= 40000 && upperPrice <= 100000 { return true }
+        if over100K && upperPrice > 100000 { return true }
+        
+        return false
+    }
+}
+
 
 struct NewFilter: View {
     @State var showAllFilter: Bool = false
-
     let categories: [String]
     @Binding var selectedCategories: [String]
     @Binding var isOpenNow: Bool?
+    @Binding var priceFilter: PriceRangeFilter
     
     var body: some View {
-        
         Button {
             showAllFilter = true
         } label: {
@@ -32,13 +76,12 @@ struct NewFilter: View {
             ModalFilter(
                 categories: categories,
                 selectedCategories: $selectedCategories,
-                isOpenNow: Binding(get: { isOpenNow ?? false }, set: { isOpenNow = $0 })
+                isOpenNow: Binding(get: { isOpenNow ?? false }, set: { isOpenNow = $0 }),
+                priceFilter: $priceFilter
             )
         }
     }
 }
-
-
 
 struct ModalFilter: View {
     @Environment(\.dismiss) private var dismiss
@@ -46,77 +89,28 @@ struct ModalFilter: View {
     let categories: [String]
     @Binding var selectedCategories: [String]
     @Binding var isOpenNow: Bool
-
-
-    @State private var selectedTenant: Set<String> = []
+    @Binding var priceFilter: PriceRangeFilter
     
-    
-    @State var tempIsOpenNow: Bool = false
-    
+    @State private var tempIsOpenNow: Bool = false
     @State private var useSavedFilters = false
-    @State private var priceBelow15K = false
-    @State private var price15to40K = false
-    @State private var price40to100K = false
-    @State private var priceOver100K = false
-    
-    
-    private func onApply(){
-        isOpenNow = tempIsOpenNow
-        dismiss()
-    }
-    
-    private func onSave(){
-        
-    }
-    
-    private func onClear(){
-        useSavedFilters = false
-        
-        isOpenNow = false
-        tempIsOpenNow = false
-        
-        priceBelow15K = false
-        price15to40K = false
-        price40to100K = false
-        priceOver100K = false
-        
-        selectedCategories = []
-    }
-    
-    private func conflictingCategory(for category: String) -> String? {
-        if category.hasPrefix("Non-") {
-            // If start with "Non-", check category without "Non-"
-            let conflictCategory = String(category.dropFirst(4))
-            return selectedCategories.contains(conflictCategory) ? conflictCategory : nil
-        } else {
-            // If start without "Non-", check category with "Non-"
-            let conflictCategory = "Non-" + category
-            return selectedCategories.contains(conflictCategory) ? conflictCategory : nil
-        }
-    }
+    @State private var tempPriceFilter = PriceRangeFilter()
     
     var body: some View {
-        
         VStack(alignment: .leading, spacing: 30) {
-            
             HStack {
                 Text("Filters")
                     .font(.title2.bold())
                 
                 Spacer()
                 
-                Button(action: {
-                    onClear()
-                }) {
+                Button(action: onClear) {
                     Text("Clear")
                         .font(.title2.bold())
                 }
                 .foregroundStyle(Colors.gopGreenDark)
-
             }
             .padding(.horizontal)
                         
-            // Filter Options
             ScrollView() {
                 VStack(alignment: .leading, spacing: 20) {
                     Toggle("Use Saved Filters", isOn: $useSavedFilters)
@@ -126,11 +120,12 @@ struct ModalFilter: View {
                     
                     Divider().padding(.horizontal)
                     
+                    // Tenant Status Filter
                     VStack(alignment: .leading) {
                         Text("Tenant")
                             .font(.title3.bold())
                         
-                        HStack{
+                        HStack {
                             Button {
                                 tempIsOpenNow.toggle()
                             } label: {
@@ -148,26 +143,29 @@ struct ModalFilter: View {
                                     .stroke(Colors.gopGreenDark, lineWidth: 1.5)
                             )
                         }
-                        
                     }
                     .padding(.horizontal)
                     
                     Divider().padding(.horizontal)
                     
+                    // Price Filter Section
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Price")
                             .font(.title3.bold())
                         
-                        Toggle("Below Rp15.000", isOn: $priceBelow15K)
+                        Toggle("Below Rp15.000", isOn: $tempPriceFilter.below15K)
                             .toggleStyle(CheckboxStyle())
                             .font(.title3)
-                        Toggle("Rp15.000 - Rp40.000", isOn: $price15to40K)
+                        
+                        Toggle("Rp15.000 - Rp40.000", isOn: $tempPriceFilter.fifteenTo40K)
                             .toggleStyle(CheckboxStyle())
                             .font(.title3)
-                        Toggle("Rp40.000 - Rp100.000", isOn: $price40to100K)
+                        
+                        Toggle("Rp40.000 - Rp100.000", isOn: $tempPriceFilter.fortyTo100K)
                             .toggleStyle(CheckboxStyle())
                             .font(.title3)
-                        Toggle("Over Rp100.000", isOn: $priceOver100K)
+                        
+                        Toggle("Over Rp100.000", isOn: $tempPriceFilter.over100K)
                             .toggleStyle(CheckboxStyle())
                             .font(.title3)
                     }
@@ -175,6 +173,7 @@ struct ModalFilter: View {
                     
                     Divider().padding(.horizontal)
                     
+                    // Cuisine Type Filter
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Cuisine Type")
                             .font(.title3.bold())
@@ -214,12 +213,10 @@ struct ModalFilter: View {
                     .padding(.horizontal)
                 }
             }
-            // Filter Options
             
+            // Action Buttons
             HStack {
-                Button(action: {
-                    onSave()
-                }){
+                Button(action: onSave) {
                     Text("Save Filters")
                         .frame(maxWidth: .infinity)
                 }
@@ -229,10 +226,7 @@ struct ModalFilter: View {
                 .background(Colors.gopGrayLight)
                 .cornerRadius(13)
                 
-                
-                Button(action: {
-                    onApply()
-                }){
+                Button(action: onApply) {
                     Text("Apply")
                         .frame(maxWidth: .infinity)
                 }
@@ -241,12 +235,44 @@ struct ModalFilter: View {
                 .padding()
                 .background(Colors.gopGold)
                 .cornerRadius(13)
-
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal)
         }
         .padding(.top)
         .presentationDragIndicator(.visible)
+        .onAppear {
+            // Initialize temp values when view appears
+            tempIsOpenNow = isOpenNow
+            tempPriceFilter = priceFilter
+        }
+    }
+    
+    private func onApply() {
+        isOpenNow = tempIsOpenNow
+        priceFilter = tempPriceFilter
+        dismiss()
+    }
+    
+    private func onSave() {
+        // Save filter logic here if needed
+    }
+    
+    private func onClear() {
+        useSavedFilters = false
+        tempIsOpenNow = false
+        selectedCategories = []
+        tempPriceFilter = PriceRangeFilter()
+    }
+    
+    
+    private func conflictingCategory(for category: String) -> String? {
+        if category.hasPrefix("Non-") {
+            let conflictCategory = String(category.dropFirst(4))
+            return selectedCategories.contains(conflictCategory) ? conflictCategory : nil
+        } else {
+            let conflictCategory = "Non-" + category
+            return selectedCategories.contains(conflictCategory) ? conflictCategory : nil
+        }
     }
 }

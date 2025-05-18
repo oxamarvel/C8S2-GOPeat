@@ -9,6 +9,7 @@ class TenantSearchViewModel: ObservableObject{
     @Published var filteredTenants: [Tenant] = []
     @Published var recentSearch: [String] = []
     @Published var maxPrice: Double? = 100000
+    @Published var priceFilter = PriceRangeFilter()
     @Published var isOpenNow: Bool? = false
     
     let tenants: [Tenant]
@@ -52,24 +53,34 @@ class TenantSearchViewModel: ObservableObject{
         var halalTenants = tenants
         
         if containsHalal {
-            halalTenants = halalTenants.filter{$0.isHalal == true}
+            halalTenants = halalTenants.filter { $0.isHalal == true }
         }
-        if containsNonHalal{
-            halalTenants = halalTenants.filter{$0.isHalal == false}
+        if containsNonHalal {
+            halalTenants = halalTenants.filter { $0.isHalal == false }
         }
         
-        let foodCategories = selectedCategories.filter{$0 != "Halal" && $0 != "Non-Halal"}
+        let foodCategories = selectedCategories.filter { $0 != "Halal" && $0 != "Non-Halal" }
         
         filteredTenants = halalTenants.filter { tenant in
-            let withinPriceRange = tenant.priceRange.split(separator: "-").compactMap { Double($0.replacingOccurrences(of: ".", with: "")) }
+            // Price range filtering
+            let priceMatch = priceFilter.matches(tenant.priceRange)
+            
+            // Existing filters
+            let withinPriceRange = tenant.priceRange.split(separator: "-").compactMap {
+                Double($0.replacingOccurrences(of: ".", with: ""))
+            }
             let minPriceInRange = withinPriceRange.min() ?? 0
             let isPriceValid = minPriceInRange <= maxPrice ?? 100000
             let isOpen = !(isOpenNow ?? false) || isCurrentlyOpen(tenant.operationalHours)
-            return isPriceValid && isOpen && (foodCategories.isEmpty || tenant.foods.contains { food in
+            
+            return priceMatch && isPriceValid && isOpen && (foodCategories.isEmpty || tenant.foods.contains { food in
                 Set(foodCategories).isSubset(of: Set(food.categories.map { $0.rawValue }))
             })
         }
+        
+        
     }
+    
     func saveRecentSearch(searchTerm: String) {
         recentSearch.removeAll { $0.lowercased() == searchTerm.lowercased() }
         recentSearch.insert(searchTerm, at: 0)
@@ -84,6 +95,7 @@ class TenantSearchViewModel: ObservableObject{
         filteredTenants = tenants
         isOpenNow = false
         maxPrice = 100000
+        priceFilter = PriceRangeFilter() // Reset price filter
     }
 }
 
@@ -149,45 +161,50 @@ struct ModalSearch: View {
     var body: some View {
         VStack(alignment: .leading) {
             SearchBar(searchTerm: $tenantSearchViewModel.searchTerm,
-                      isTextFieldFocused: _isTextFieldFocused,
-                      onCancel: tenantSearchViewModel.onClose,
-                      onSearch: {
+                     isTextFieldFocused: _isTextFieldFocused,
+                     onCancel: tenantSearchViewModel.onClose,
+                     onSearch: {
                         tenantSearchViewModel.saveRecentSearch(searchTerm: tenantSearchViewModel.searchTerm)
-                      })
-            if (tenantSearchViewModel.sheeHeight != .fraction(0.1)){
-                
+                     })
+            
+            if (tenantSearchViewModel.sheeHeight != .fraction(0.1)) {
                 NewFilter(
-                    categories          : tenantSearchViewModel.categories,
-                    selectedCategories  : $tenantSearchViewModel.selectedCategories,
-                    isOpenNow           : $tenantSearchViewModel.isOpenNow)
+                    categories: tenantSearchViewModel.categories,
+                    selectedCategories: $tenantSearchViewModel.selectedCategories,
+                    isOpenNow: $tenantSearchViewModel.isOpenNow,
+                    priceFilter: $tenantSearchViewModel.priceFilter
+                )
+                .onChange(of: tenantSearchViewModel.priceFilter) { _, _ in
+                    tenantSearchViewModel.updateFilteredTenant()
+                }
+                .onChange(of: tenantSearchViewModel.isOpenNow) { _, _ in
+                    tenantSearchViewModel.updateFilteredTenant()
+                }
                 
-                    .onChange(of: tenantSearchViewModel.isOpenNow) { _, _ in
-                        tenantSearchViewModel.updateFilteredTenant()
-                    }
+//                Filter(
+//                    categories: tenantSearchViewModel.categories,
+//                    selectedCategories: $tenantSearchViewModel.selectedCategories,
+//                    maxPrice: $tenantSearchViewModel.maxPrice,
+//                    isOpenNow: tenantSearchViewModel.isOpenNow)
+//                .onChange(of: tenantSearchViewModel.selectedCategories) { _, _ in
+//                    tenantSearchViewModel.updateFilteredTenant()
+//                }
+//                .onChange(of: tenantSearchViewModel.maxPrice) { _, _ in
+//                    tenantSearchViewModel.updateFilteredTenant()
+//                }
+//                .onChange(of: tenantSearchViewModel.isOpenNow) { _, _ in
+//                    tenantSearchViewModel.updateFilteredTenant()
+//                }
                 
-                Filter(
-                    categories          : tenantSearchViewModel.categories,
-                    selectedCategories  : $tenantSearchViewModel.selectedCategories,
-                    maxPrice            : $tenantSearchViewModel.maxPrice,
-                    isOpenNow           : $tenantSearchViewModel.isOpenNow)
-                    .onChange(of: tenantSearchViewModel.selectedCategories) { _, _ in
-                        tenantSearchViewModel.updateFilteredTenant()
-                    }
-                    .onChange(of: tenantSearchViewModel.maxPrice) { _, _ in
-                        tenantSearchViewModel.updateFilteredTenant()
-                    }
-                    .onChange(of: tenantSearchViewModel.isOpenNow) { _, _ in
-                        tenantSearchViewModel.updateFilteredTenant()
-                    }
-                
-                ScrollView(.vertical){
+                ScrollView(.vertical) {
                     //Recent search (max 5)
                     if !tenantSearchViewModel.recentSearch.isEmpty {
                         showRecentSearch()
                     }
                     VStack {
                         showTenant(tenants: tenantSearchViewModel.doSearch(searchTerm: tenantSearchViewModel.searchTerm))
-                    }.padding(.top, tenantSearchViewModel.recentSearch.isEmpty ? 0 : 10)
+                    }
+                    .padding(.top, tenantSearchViewModel.recentSearch.isEmpty ? 0 : 10)
                 }
             }
         }
@@ -209,3 +226,13 @@ struct ModalSearch: View {
 
     }
 }
+
+
+
+
+
+
+
+
+
+
