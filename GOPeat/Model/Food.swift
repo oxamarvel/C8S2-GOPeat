@@ -24,14 +24,21 @@ class Food: Identifiable {
 }
 
 enum FoodCategory: String, CaseIterable, Codable {
-    case spicy = "Spicy"
     case nonSpicy = "Non-Spicy"
-    case soup = "Soup"
-    case greasy = "Greasy"
+    case spicy = "Spicy"
+    
     case nonGreasy = "Non-Greasy"
-    case roast = "Roast"
-    case savory = "Savory"
-    case sweet = "Sweet"
+    case greasy = "Greasy"
+    
     case nonSweet = "Non-Sweet"
+    case sweet = "Sweet"
+
     case dairyFree = "Dairy-Free"
+    case crustaceanFree = "Crustacean-Free"
+    
+    
+    
+    case savory = "Savory"
+    case soup = "Soup"
+    case roast = "Roast"
 }

@@ -38,7 +38,6 @@ struct TenantCard: View {
                         .bold()
                     Text(tenant.canteen?.name ?? "")
                         .font(.caption)
-//                        .padding(.bottom,5)
                     
                     Spacer()
                     

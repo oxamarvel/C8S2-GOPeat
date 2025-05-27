@@ -108,33 +108,33 @@ struct CanteenDetail: View {
                         NewFilter(
                             categories: viewModel.categories,
                             selectedCategories: $viewModel.selectedCategories,
-                            isOpenNow: $viewModel.isOpenNow)
-                        
+                            isOpenNow: $viewModel.isOpenNow,
+                            priceFilter: $viewModel.priceFilter
+                        )
                             .onChange(of: viewModel.isOpenNow) { _, _ in
+                                viewModel.updateFilteredTenant()
+                            }
+                            .onChange(of: viewModel.priceFilter) { _, _ in
                                 viewModel.updateFilteredTenant()
                             }
                             .onChange(of: viewModel.selectedCategories) { _, _ in
                                 viewModel.updateFilteredTenant()
                             }
                         
-                        
-
-                            
-                        
-                        Filter(
-                            categories          : viewModel.categories,
-                            selectedCategories  : $viewModel.selectedCategories,
-                            maxPrice            : $viewModel.maxPrice,
-                            isOpenNow           : $viewModel.isOpenNow)
-                            .onChange(of: viewModel.selectedCategories) { _, _ in
-                                viewModel.updateFilteredTenant()
-                            }
-                            .onChange(of: viewModel.maxPrice) { _, _ in
-                                viewModel.updateFilteredTenant()
-                            }
-                            .onChange(of: viewModel.isOpenNow) { _, _ in
-                                viewModel.updateFilteredTenant()
-                            }
+//                        Filter(
+//                            categories          : viewModel.categories,
+//                            selectedCategories  : $viewModel.selectedCategories,
+//                            maxPrice            : $viewModel.maxPrice,
+//                            isOpenNow           : $viewModel.isOpenNow)
+//                            .onChange(of: viewModel.selectedCategories) { _, _ in
+//                                viewModel.updateFilteredTenant()
+//                            }
+//                            .onChange(of: viewModel.maxPrice) { _, _ in
+//                                viewModel.updateFilteredTenant()
+//                            }
+//                            .onChange(of: viewModel.isOpenNow) { _, _ in
+//                                viewModel.updateFilteredTenant()
+//                            }
                     }
                     
                     // Tenants Section
